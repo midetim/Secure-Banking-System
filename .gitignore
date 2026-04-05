@@ -1,0 +1,15 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Logs and runtime data
+server/data/accounts.json
+server/data/audit.log
+
+# OS stuff
+.DS_Store
+Thumbs.db
+
+# Virtual environments (if you ever use one)
+venv/
+.env/
