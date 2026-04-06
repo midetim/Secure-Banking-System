@@ -8,7 +8,7 @@ from client_session import ClientSession
 from audit_logger import AuditLogger
 
 
-HOST = "ur ip address here"
+HOST = "0.0.0.0"
 PORT = 5000
 ACCOUNTS_FILE = "data/accounts.json"
 AUDIT_LOG_FILE = "data/audit.log"

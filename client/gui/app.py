@@ -48,7 +48,7 @@ def styled_entry(parent, show=None, width=30):
 class BankingApp(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("Secure ATM — COE817")
+        self.title("Secure ATM, COE817")
         self.geometry("520x560")
         self.resizable(False, False)
         self.configure(bg=BG)
@@ -68,9 +68,8 @@ class BankingApp(tk.Tk):
         outer.pack(expand=True)
 
         # Header
-        tk.Label(outer, text="🏦", font=("Segoe UI", 36), bg=BG, fg=TEXT).pack(pady=(0, 4))
         tk.Label(outer, text="Secure ATM", font=SANS_XL, bg=BG, fg=TEXT).pack()
-        tk.Label(outer, text="COE817 — Banking Security Project",
+        tk.Label(outer, text="COE817, Banking Security Project",
                  font=SANS_SM, bg=BG, fg=MUTED).pack(pady=(2, 24))
 
         # Card
@@ -114,12 +113,12 @@ class BankingApp(tk.Tk):
                 self.client.disconnect()
                 return
             if not self.client.handshake():
-                self.status_var.set("Handshake failed — server authentication error.")
+                self.status_var.set("Handshake failed, server authentication error.")
                 self.client.disconnect()
                 return
             self._show_dashboard(username)
         except ConnectionRefusedError:
-            self.status_var.set("Cannot connect — is the server running?")
+            self.status_var.set("Cannot connect, is the server running?")
         except Exception as e:
             self.status_var.set(f"Error: {e}")
             self.client.disconnect()
@@ -144,7 +143,7 @@ class BankingApp(tk.Tk):
             self.status_var.set(msg)
             self.status_lbl.config(fg=ACCENT if result.get("status") == "ok" else RED)
         except ConnectionRefusedError:
-            self.status_var.set("Cannot connect — is the server running?")
+            self.status_var.set("Cannot connect, is the server running?")
         except Exception as e:
             self.status_var.set(f"Error: {e}")
             self.client.disconnect()
@@ -159,7 +158,7 @@ class BankingApp(tk.Tk):
         topbar = tk.Frame(self, bg=PANEL, pady=12,
                           highlightthickness=1, highlightbackground=BORDER)
         topbar.pack(fill="x")
-        tk.Label(topbar, text=f"🏦  Secure ATM  —  {username}",
+        tk.Label(topbar, text=f"Secure ATM ,  {username}",
                  font=SANS_LG, bg=PANEL, fg=TEXT).pack(side="left", padx=20)
         tk.Button(topbar, text="Logout", font=SANS_SM, bg=BG, fg=MUTED,
                   relief="flat", cursor="hand2", activebackground=BG,
@@ -216,7 +215,7 @@ class BankingApp(tk.Tk):
             result = self.client.deposit(amount)
             tag = "ok" if result.get("status") == "ok" else "error"
             bal = f"  |  Balance: ${result.get('balance', '?'):.2f}" if "balance" in result else ""
-            self._log(f"DEPOSIT   ${amount:.2f}{bal}  —  {result.get('message', '')}", tag)
+            self._log(f"DEPOSIT   ${amount:.2f}{bal} ,  {result.get('message', '')}", tag)
         except Exception as e:
             self._log(f"DEPOSIT   ERROR: {e}", "error")
 
@@ -228,7 +227,7 @@ class BankingApp(tk.Tk):
             result = self.client.withdraw(amount)
             tag = "ok" if result.get("status") == "ok" else "error"
             bal = f"  |  Balance: ${result.get('balance', '?'):.2f}" if "balance" in result else ""
-            self._log(f"WITHDRAW  ${amount:.2f}{bal}  —  {result.get('message', '')}", tag)
+            self._log(f"WITHDRAW  ${amount:.2f}{bal} ,  {result.get('message', '')}", tag)
         except Exception as e:
             self._log(f"WITHDRAW  ERROR: {e}", "error")
 
