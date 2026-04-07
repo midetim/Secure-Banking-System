@@ -8,11 +8,12 @@ from secure_channel import SecureChannel
 
 
 class ClientSession:
-    def __init__(self, client_socket: socket.socket, client_address, bank_logic: BankLogic, audit_logger):
+    def __init__(self, client_socket: socket.socket, client_address, bank_logic: BankLogic, audit_logger, event_callback=None):
         self.client_socket = client_socket
         self.client_address = client_address
         self.bank_logic = bank_logic
         self.audit_logger = audit_logger
+        self.event_callback = event_callback
         self.buffer_size = 4096
 
         self.logged_in_user = None
@@ -26,6 +27,10 @@ class ClientSession:
         self.secure_channel = None
 
         self.auth = AuthProtocol(shared_key="bank_shared_secret_2026")
+
+    def _emit(self, event_type: str, **kwargs) -> None:
+        if self.event_callback:
+            self.event_callback(event_type, {"addr": self.client_address, **kwargs})
 
     def send_json(self, data: dict) -> None:
         message = json.dumps(data) + "\n"
@@ -110,6 +115,7 @@ class ClientSession:
 
         if not valid:
             self._reset_handshake_state()
+            self._emit("auth_fail")
             return {"status": "error", "message": "Client authentication failed."}
 
         self.master_secret = self.auth.derive_master_secret(
@@ -124,6 +130,8 @@ class ClientSession:
 
         self.secure_channel = SecureChannel(self.enc_key, self.mac_key)
         self.handshake_complete = True
+
+        self._emit("auth_success", username=self.logged_in_user)
 
         return {
             "status": "ok",
@@ -152,6 +160,7 @@ class ClientSession:
 
             # Log the balance inquiry so the audit file reflects user activity.
             self.audit_logger.log_action(self.logged_in_user, "balance inquiry")
+            self._emit("transaction", username=self.logged_in_user, action="balance inquiry")
 
         elif action == "deposit":
             try:
@@ -166,6 +175,7 @@ class ClientSession:
                         self.logged_in_user,
                         f"deposit {amount}"
                     )
+                    self._emit("transaction", username=self.logged_in_user, action=f"deposit ${amount:.2f}")
 
         elif action == "withdraw":
             try:
@@ -180,6 +190,7 @@ class ClientSession:
                         self.logged_in_user,
                         f"withdraw {amount}"
                     )
+                    self._emit("transaction", username=self.logged_in_user, action=f"withdraw ${amount:.2f}")
 
         else:
             response_payload = {"status": "error", "message": "Unknown secure action."}
@@ -202,6 +213,7 @@ class ClientSession:
             if result["status"] == "ok":
                 self.logged_in_user = username
                 self._reset_handshake_state()
+                self._emit("login", username=username)
 
             return result
 
@@ -226,6 +238,7 @@ class ClientSession:
 
     def run(self) -> None:
         print(f"[+] Client connected: {self.client_address}")
+        self._emit("connect")
 
         try:
             while True:
@@ -240,7 +253,9 @@ class ClientSession:
 
         except Exception as e:
             print(f"[!] Error in session {self.client_address}: {e}")
+            self._emit("error", msg=str(e))
 
         finally:
             self.client_socket.close()
             print(f"[x] Connection closed: {self.client_address}")
+            self._emit("disconnect", username=self.logged_in_user)
